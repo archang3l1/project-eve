@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract DonationFund {
+    address public owner;
+    uint256 public totalDonations;
+
+    // Event to log donations
+    event DonationReceived(address indexed donor, uint256 amount);
+
+    // Event to log fund transfers
+    event FundTransferred(address indexed recipient, uint256 amount);
+
+    // Modifier to restrict access to the owner
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can perform this action");
+        _;
+    }
+
+    // Constructor to set the contract owner
+    constructor() {
+        owner = msg.sender;
+    }
+
+    // Function to receive donations
+    function donate() external payable {
+        require(msg.value > 0, "Donation must be greater than zero");
+
+        totalDonations += msg.value;
+        emit DonationReceived(msg.sender, msg.value);
+    }
+
+    // Function to transfer funds to a specific recipient
+    function transferFunds(address payable recipient, uint256 amount) external onlyOwner {
+        require(recipient != address(0), "Invalid recipient address");
+        require(amount > 0, "Transfer amount must be greater than zero");
+        require(amount <= address(this).balance, "Insufficient contract balance");
+
+        recipient.transfer(amount);
+        emit FundTransferred(recipient, amount);
+    }
+
+    // Function to check the contract balance
+    function getBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+}
